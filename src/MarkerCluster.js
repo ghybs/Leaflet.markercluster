@@ -27,12 +27,16 @@ L.MarkerCluster = L.Marker.extend({
 	getAllChildMarkers: function (storageArray) {
 		storageArray = storageArray || [];
 
-		for (var i = this._childClusters.length - 1; i >= 0; i--) {
-			this._childClusters[i].getAllChildMarkers(storageArray);
+		var markers = this._markers,
+		    childClusters = this._childClusters,
+		    i;
+
+		for (i = childClusters.length - 1; i >= 0; i--) {
+			childClusters[i].getAllChildMarkers(storageArray);
 		}
 
-		for (var j = this._markers.length - 1; j >= 0; j--) {
-			storageArray.push(this._markers[j]);
+		for (i = markers.length - 1; i >= 0; i--) {
+			storageArray.push(markers[i]);
 		}
 
 		return storageArray;
@@ -273,9 +277,13 @@ L.MarkerCluster = L.Marker.extend({
 					return;
 				}
 
+				var markers = c._markers,
+				    fg = c._group._featureGroup,
+				    i, nm;
+
 				//Add our child markers at startPos (so they can be animated out)
-				for (var i = c._markers.length - 1; i >= 0; i--) {
-					var nm = c._markers[i];
+				for (i = markers.length - 1; i >= 0; i--) {
+					nm = markers[i];
 
 					if (!bounds.contains(nm._latlng)) {
 						continue;
@@ -290,7 +298,7 @@ L.MarkerCluster = L.Marker.extend({
 						}
 					}
 
-					c._group._featureGroup.addLayer(nm);
+					fg.addLayer(nm);
 				}
 			},
 			function (c) {
@@ -300,9 +308,13 @@ L.MarkerCluster = L.Marker.extend({
 	},
 
 	_recursivelyRestoreChildPositions: function (zoomLevel) {
+		var markers = this._markers,
+		    childClusters = this._childClusters,
+		    i, nm;
+
 		//Fix positions of child markers
-		for (var i = this._markers.length - 1; i >= 0; i--) {
-			var nm = this._markers[i];
+		for (i = markers.length - 1; i >= 0; i--) {
+			nm = markers[i];
 			if (nm._backupLatlng) {
 				nm.setLatLng(nm._backupLatlng);
 				delete nm._backupLatlng;
@@ -311,12 +323,12 @@ L.MarkerCluster = L.Marker.extend({
 
 		if (zoomLevel - 1 === this._zoom) {
 			//Reposition child clusters
-			for (var j = this._childClusters.length - 1; j >= 0; j--) {
-				this._childClusters[j]._restorePosition();
+			for (i = childClusters.length - 1; i >= 0; i--) {
+				childClusters[i]._restorePosition();
 			}
 		} else {
-			for (var k = this._childClusters.length - 1; k >= 0; k--) {
-				this._childClusters[k]._recursivelyRestoreChildPositions(zoomLevel);
+			for (i = childClusters.length - 1; i >= 0; i--) {
+				childClusters[i]._recursivelyRestoreChildPositions(zoomLevel);
 			}
 		}
 	},
@@ -330,14 +342,17 @@ L.MarkerCluster = L.Marker.extend({
 
 	//exceptBounds: If set, don't remove any markers/clusters in it
 	_recursivelyRemoveChildrenFromMap: function (previousBounds, zoomLevel, exceptBounds) {
-		var m, i;
 		this._recursively(previousBounds, -1, zoomLevel - 1,
 			function (c) {
+				var markers = c._markers,
+				    fg = c._group._featureGroup,
+				    i, m;
+
 				//Remove markers at every level
-				for (i = c._markers.length - 1; i >= 0; i--) {
-					m = c._markers[i];
+				for (i = markers.length - 1; i >= 0; i--) {
+					m = markers[i];
 					if (!exceptBounds || !exceptBounds.contains(m._latlng)) {
-						c._group._featureGroup.removeLayer(m);
+						fg.removeLayer(m);
 						if (m.clusterShow) {
 							m.clusterShow();
 						}
@@ -345,11 +360,15 @@ L.MarkerCluster = L.Marker.extend({
 				}
 			},
 			function (c) {
+				var childClusters = c._childClusters,
+				    fg = c._group._featureGroup,
+				    i, m;
+
 				//Remove child clusters at just the bottom level
-				for (i = c._childClusters.length - 1; i >= 0; i--) {
-					m = c._childClusters[i];
+				for (i = childClusters.length - 1; i >= 0; i--) {
+					m = childClusters[i];
 					if (!exceptBounds || !exceptBounds.contains(m._latlng)) {
-						c._group._featureGroup.removeLayer(m);
+						fg.removeLayer(m);
 						if (m.clusterShow) {
 							m.clusterShow();
 						}

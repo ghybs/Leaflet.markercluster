@@ -1151,8 +1151,7 @@ L.MarkerClusterGroup.include({
 
 		_animationZoomIn: function (previousZoomLevel, newZoomLevel) {
 			var bounds = this._getExpandedVisibleBounds(),
-			    fg     = this._featureGroup,
-			    i;
+			    fg     = this._featureGroup;
 
 			this._ignoreMove = true;
 
@@ -1160,7 +1159,7 @@ L.MarkerClusterGroup.include({
 			this._topClusterLevel._recursively(bounds, previousZoomLevel, 0, function (c) {
 				var startPos = c._latlng,
 				    markers  = c._markers,
-				    m;
+				    m, i;
 
 				if (!bounds.contains(startPos)) {
 					startPos = null;
